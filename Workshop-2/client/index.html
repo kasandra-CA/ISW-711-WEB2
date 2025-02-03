@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,25 +7,52 @@
   <script>
     const completed = (e) => {
       const data = JSON.parse(e.target.responseText);
-      document.getElementById('result').innerHTML = `Tipo de Cambio Dolares ${data.TipoCompraDolares}`;
+      if (data.TipoCompraDolares !== undefined) {
+        document.getElementById('result').innerHTML = `
+          <strong>Tipo de Cambio Dólares:</strong><br>
+          Compra: ${data.TipoCompraDolares}<br>
+          Venta: ${data.TipoVentaDolares}`;
+      } else if (data.TipoCompraEuros !== undefined) {
+        document.getElementById('result').innerHTML = `
+          <strong>Tipo de Cambio Euros:</strong><br>
+          Compra: ${data.TipoCompraEuros}<br>
+          Venta: ${data.TipoVentaEuros}`;
+      } else if (data.message) {
+        document.getElementById('result').innerHTML = data.message;
+      }
     };
 
-    const error = () => console.log(this.responseText);
+    const error = () => console.log("Error en la petición AJAX");
 
-    function getHelloWorld() {
+    function getTipoCambio() {
+      const selectElement = document.getElementById('select-coin');
+      const type = selectElement.value;
+      
+      if (type === 'none') {
+        document.getElementById('result').innerHTML = '';
+        return;
+      }
+      
       const ajaxRequest = new XMLHttpRequest();
       ajaxRequest.addEventListener("load", completed);
       ajaxRequest.addEventListener("error", error);
-      ajaxRequest.open("GET", "http://localhost:3000/tipocambio");
+      ajaxRequest.open("GET", "http://localhost:3000/tipocambio?type=" + type);
       ajaxRequest.send();
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById('select-coin').addEventListener('change', getTipoCambio);
+    });
   </script>
 </head>
-
 <body>
-  <button onclick="getHelloWorld();">Hello</button>
-  <h3>Results:</h3>
+  <h2>Tipos De Cambio</h2>
+  <label for="select-coin">Selecciona la moneda:</label>
+  <select name="select-coin" id="select-coin">
+    <option value="none">--Seleccione--</option>
+    <option value="usd">USD</option>
+    <option value="eur">EUR</option>
+  </select>
   <div id="result"></div>
 </body>
-
 </html>
