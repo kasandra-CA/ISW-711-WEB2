@@ -2,7 +2,12 @@ const express = require('express');
 const app = express();
 // database connection
 const mongoose = require("mongoose");
-const db = mongoose.connect("mongodb://127.0.0.1:27017/todo-api");
+const db = mongoose.connect("mongodb+srv://kca11tita:7OMjztVsmZUUKqov@cluster0.lr72j.mongodb.net/todo-api?retryWrites=true&w=majority", {
+  useNewUrlParser: true,       // Nueva configuración recomendada
+  useUnifiedTopology: true     // Habilitar el nuevo motor de descubrimiento
+})
+.then(() => console.log("Conectado a MongoDB Atlas"))
+.catch(err => console.error("Error conectando a MongoDB Atlas:", err));
 
 const {
   taskPatch,
