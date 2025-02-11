@@ -7,26 +7,28 @@ const Task = require("../models/taskModel");
  * @param {*} res
  */
 const taskPost = (req, res) => {
-  var task = new Task();
+  let task = new Task();
 
-  task.title = req.body.title;
-  task.detail = req.body.detail;
+  task.first_name = req.body.first_name;
+  task.last_name = req.body.last_name;
+  task.age = req.body.age;
+  task.cedula = req.body.cedula;
 
-  if (task.title && task.detail) {
-    task.save(function (err) {
-      if (err) {
+  if (task.first_name && task.last_name) {
+    task.save().then(() => {
+      res.status(201);//CREATED
+      res.header({
+        'location': `/tasks/?id=${task.id}`
+      });
+      res.json(task);
+    })
+      .catch((err) => {
         res.status(422);
-        console.log('error while saving the task', err)
+        console.log('error while saving the task', err);
         res.json({
           error: 'There was an error saving the task'
         });
-      }
-      res.status(201);//CREATED
-      res.header({
-        'location': `http://localhost:3000/api/tasks/?id=${task.id}`
       });
-      res.json(task);
-    });
   } else {
     res.status(422);
     console.log('error while saving the task')
@@ -45,24 +47,28 @@ const taskPost = (req, res) => {
 const taskGet = (req, res) => {
   // if an specific task is required
   if (req.query && req.query.id) {
-    Task.findById(req.query.id, function (err, task) {
-      if (err) {
-        res.status(404);
-        console.log('error while queryting the task', err)
-        res.json({ error: "Task doesnt exist" })
+    Task.findById(req.query.id).then(task => {
+      if (task) {
+        res.json(task);
       }
-      res.json(task);
-    });
+      res.status(404);
+      res.json({ error: "Task doesnt exist" })
+    })
+      .catch((err) => {
+        res.status(500);
+        console.log('error while queryting the task', err)
+        res.json({ error: "There was an error" })
+      })
   } else {
     // get all tasks
-    Task.find(function (err, tasks) {
-      if (err) {
+    Task.find()
+      .then(task => {
+        res.json(task);
+      })
+      .catch(err => {
         res.status(422);
-        res.json({ "error": err });
-      }
-      res.json(tasks);
-    });
-
+        res.json({ "error": err })
+      });
   }
 };
 
@@ -72,7 +78,7 @@ const taskGet = (req, res) => {
  * @param {*} req
  * @param {*} res
  */
-const taskPatch = (req, res) => {
+/**const taskPatch = (req, res) => {
   // get task by id
   if (req.query && req.query.id) {
     Task.findById(req.query.id, function (err, task) {
@@ -105,10 +111,71 @@ const taskPatch = (req, res) => {
     res.status(404);
     res.json({ error: "Task doesnt exist" })
   }
+};*/
+
+
+/**
+ * Updates a task (PUT)
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+const taskPut = (req, res) => {
+  if (req.query && req.query.id) {
+    Task.findById(req.query.id, function (err, task) {
+      if (err || !task) {
+        res.status(404);
+        return res.json({ error: "Task doesn't exist" });
+      }
+
+      // Overwrite all properties
+      task.first_name = req.body.first_name;
+      task.last_name = req.body.last_name;
+      task.age = req.body.age;
+      task.cedula = req.body.cedula;
+
+      task.save(function (err) {
+        if (err) {
+          res.status(422);
+          return res.json({ error: 'Error updating the task' });
+        }
+        res.status(200);
+        res.json(task);
+      });
+    });
+  } else {
+    res.status(400).json({ error: "ID is required" });
+  }
+};
+
+/**
+ * Deletes a task (DELETE)
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+const taskDelete = (req, res) => {
+  if (req.query && req.query.id) {
+    Task.findByIdAndDelete(req.query.id)
+      .then((task) => {
+        if (!task) {
+          res.status(404);
+          return res.json({ error: "Task not found" });
+        }
+        res.status(200).json({ message: "Task deleted successfully" });
+      })
+      .catch((err) => {
+        res.status(500);
+        res.json({ error: "Error deleting task" });
+      });
+  } else {
+    res.status(400).json({ error: "ID is required" });
+  }
 };
 
 module.exports = {
   taskGet,
   taskPost,
-  taskPatch
+  taskPut,
+  taskDelete
 }
