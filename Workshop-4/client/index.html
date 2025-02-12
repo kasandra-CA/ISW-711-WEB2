@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 1 - Consume API</title>
+  <script>
+    async function addTeacher() {
+      const firstName = document.getElementById("first_name").value;
+      const lastName = document.getElementById("last_name").value;
+      const age = document.getElementById("age").value;
+      const cedula = document.getElementById("cedula").value;
+
+      const response = await fetch("http://localhost:3000/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ first_name: firstName, last_name: lastName, age, cedula })
+      });
+
+      if (response.ok) {
+        alert("Teacher added successfully!");
+        listTeachers();
+      } else {
+        alert("Error adding teacher");
+      }
+    }
+
+    async function listTeachers() {
+      const response = await fetch("http://localhost:3000/tasks");
+      const teachers = await response.json();
+
+      let output = "<ul>";
+      teachers.forEach(teacher => {
+        output += `<li>${teacher.first_name} ${teacher.last_name} - Age: ${teacher.age} - Cedula: ${teacher.cedula}</li>`;
+      });
+      output += "</ul>";
+
+      document.getElementById("teacher_list").innerHTML = output;
+    }
+
+    document.addEventListener("DOMContentLoaded", listTeachers);
+  </script>
+</head>
+
+<body>
+  <h1>Teacher Management</h1>
+
+  <h2>Add a Teacher</h2>
+  <label>First Name: <input type="text" id="first_name"></label><br>
+  <label>Last Name: <input type="text" id="last_name"></label><br>
+  <label>Age: <input type="number" id="age"></label><br>
+  <label>Cedula: <input type="text" id="cedula"></label><br>
+  <button onclick="addTeacher()">Add Teacher</button>
+
+  <h2>All Teachers</h2>
+  <div id="teacher_list"></div>
+</body>
+
+</html>
