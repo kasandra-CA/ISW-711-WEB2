@@ -12,11 +12,11 @@ mongoose.connect(MONGO_URI, {
   .catch(err => console.log("MongoDB connection error:", err));
 
 const {
-  taskPut,
-  taskPost,
-  taskGet,
-  taskDelete
-} = require("./controllers/taskController.js");
+  teacherPut,
+  teacherPost,
+  teacherGet,
+  teacherDelete
+} = require("./controllers/teachersController.js");
 
 // Parser for request body
 const bodyParser = require("body-parser");
@@ -30,10 +30,10 @@ app.use(cors({
 }));
 
 // API routes
-app.get("/tasks", taskGet);
-app.post("/tasks", taskPost);
-app.put("/tasks", taskPut);
-app.delete("/tasks", taskDelete);
+app.get("/teachers", teacherGet);
+app.post("/teachers", teacherPost);
+app.put("/teachers", teacherPut);
+app.delete("/teachers", teacherDelete);
 
 // Start server
 app.listen(3000, () => console.log(`Server running on port 3000!`));
