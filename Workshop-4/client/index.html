@@ -1,29 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
   <title>Teacher Management</title>
 </head>
+
 <body>
   <h1>Teacher Management</h1>
 
   <h2>Add a Teacher</h2>
-  <label>First Name: <input type="text" id="first_name"></label><br>
-  <label>Last Name: <input type="text" id="last_name"></label><br>
-  <label>Age: <input type="number" id="age"></label><br>
-  <label>Cedula: <input type="text" id="cedula"></label><br>
-  <button onclick="addTeacher()">Add Teacher</button>
+
+  <form class="border border-black d-flex align-items-center justify-content-center">
+    <div class="form-group">
+      <label for="first_name">First Name:</label>
+      <input type="text" id="first_name" class="form-control" placeholder="First Name">
+    </div>
+  
+    <div class="form-group">
+      <label for="last_name">Last Name:</label>
+      <input type="text" id="last_name" class="form-control" placeholder="Last Name">
+    </div>
+  
+    <div class="form-group">
+      <label for="age">Age:</label>
+      <input type="number" id="age" class="form-control" placeholder="Age">
+    </div>
+  
+    <div class="form-group">
+      <label for="cedula">Cedula:</label>
+      <input type="text" id="cedula" class="form-control" placeholder="Cedula">
+    </div>
+
+    <button onclick="addTeacher()" type="submit" class="btn btn-primary">Add Teacher</button>
+  </form>
+
 
   <h2>All Teachers</h2>
-  <table border="1">
-    <thead>
+  <table border="1" class="table table-hover">
+    <thead class="thead-dark">
       <tr>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Age</th>
-        <th>Cedula</th>
-        <th>Actions</th>
+        <th scope="col">First Name</th>
+        <th scope="col">Last Name</th>
+        <th scope="col">Age</th>
+        <th scope="col">Cedula</th>
+        <th scope="col">Actions</th>
       </tr>
     </thead>
     <tbody id="teacher_table"></tbody>
@@ -116,4 +140,5 @@
     document.addEventListener("DOMContentLoaded", listTeachers);
   </script>
 </body>
+
 </html>

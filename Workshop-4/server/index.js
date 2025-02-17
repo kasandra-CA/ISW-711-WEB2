@@ -18,6 +18,13 @@ const {
   teacherDelete
 } = require("./controllers/teachersController.js");
 
+const {
+  coursePut,
+  coursePost,
+  courseGet,
+  courseDelete
+} = require("./controllers/coursesController.js");
+
 // Parser for request body
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
@@ -29,11 +36,17 @@ app.use(cors({
   methods: "*"
 }));
 
-// API routes
+// API routes teachers
 app.get("/teachers", teacherGet);
 app.post("/teachers", teacherPost);
 app.put("/teachers", teacherPut);
 app.delete("/teachers", teacherDelete);
+
+// API routes courses
+app.get("/courses", courseGet);
+app.post("/courses", coursePost);
+app.put("/courses", coursePut);
+app.delete("/courses", courseDelete);
 
 // Start server
 app.listen(3000, () => console.log(`Server running on port 3000!`));
