@@ -120,33 +120,21 @@ const teacherPatch = (req, res) => {
  * @param {*} req
  * @param {*} res
  */
-const teacherPut = (req, res) => {
-  if (req.query && req.query.id) {
-    Teacher.findById(req.query.id, function (err, teacher) {
-      if (err || !teacher) {
-        res.status(404);
-        return res.json({ error: "Teacher doesn't exist" });
+const teacherPut = async (req, res) => {
+  try {
+      const { id } = req.query;
+      const updatedTeacher = await Teacher.findByIdAndUpdate(id, req.body, { new: true });
+
+      if (!updatedTeacher) {
+          return res.status(404).json({ error: "Teacher not found" });
       }
 
-      // Overwrite all properties
-      teacher.first_name = req.body.first_name;
-      teacher.last_name = req.body.last_name;
-      teacher.age = req.body.age;
-      teacher.cedula = req.body.cedula;
-
-      teacher.save(function (err) {
-        if (err) {
-          res.status(422);
-          return res.json({ error: 'Error updating the teacher' });
-        }
-        res.status(200);
-        res.json(teacher);
-      });
-    });
-  } else {
-    res.status(400).json({ error: "ID is required" });
+      res.json(updatedTeacher);
+  } catch (error) {
+      res.status(500).json({ error: "Error updating teacher" });
   }
 };
+
 
 /**
  * Deletes a teacher (DELETE)

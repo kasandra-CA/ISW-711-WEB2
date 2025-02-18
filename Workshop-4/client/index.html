@@ -6,93 +6,144 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-  <title>Teacher Management</title>
+  <title>Teacher & Course Management</title>
 </head>
 
 <body>
-  <h1>Teacher Management</h1>
+  <h1>Teacher & Course Management</h1>
 
   <h2>Add a Teacher</h2>
-
-  <form class="border border-black d-flex align-items-center justify-content-center">
-    <div class="form-group">
-      <label for="first_name">First Name:</label>
-      <input type="text" id="first_name" class="form-control" placeholder="First Name">
-    </div>
-  
-    <div class="form-group">
-      <label for="last_name">Last Name:</label>
-      <input type="text" id="last_name" class="form-control" placeholder="Last Name">
-    </div>
-  
-    <div class="form-group">
-      <label for="age">Age:</label>
-      <input type="number" id="age" class="form-control" placeholder="Age">
-    </div>
-  
-    <div class="form-group">
-      <label for="cedula">Cedula:</label>
-      <input type="text" id="cedula" class="form-control" placeholder="Cedula">
-    </div>
-
-    <button onclick="addTeacher()" type="submit" class="btn btn-primary">Add Teacher</button>
+  <form id="teacherForm" class="border border-black p-3">
+    <input type="text" id="first_name" class="form-control mb-2" placeholder="First Name" required>
+    <input type="text" id="last_name" class="form-control mb-2" placeholder="Last Name" required>
+    <input type="number" id="age" class="form-control mb-2" placeholder="Age" required>
+    <input type="text" id="cedula" class="form-control mb-2" placeholder="Cedula" required>
+    <button type="submit" class="btn btn-primary">Add Teacher</button>
   </form>
 
-
   <h2>All Teachers</h2>
-  <table border="1" class="table table-hover">
+  <table class="table table-hover">
     <thead class="thead-dark">
       <tr>
-        <th scope="col">First Name</th>
-        <th scope="col">Last Name</th>
-        <th scope="col">Age</th>
-        <th scope="col">Cedula</th>
-        <th scope="col">Actions</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Age</th>
+        <th>Cedula</th>
+        <th>Actions</th>
       </tr>
     </thead>
-    <tbody id="teacher_table"></tbody>
+    <tbody id="teacherTable"></tbody>
+  </table>
+
+  <h2>Add a Course</h2>
+  <form id="courseForm" class="border border-black p-3">
+    <input type="text" id="name" class="form-control mb-2" placeholder="Course Name" required>
+    <input type="text" id="code" class="form-control mb-2" placeholder="Course Code" required>
+    <input type="text" id="description" class="form-control mb-2" placeholder="Description" required>
+    <select id="teacher" class="form-control mb-2"></select>
+    <button type="submit" class="btn btn-primary">Add Course</button>
+  </form>
+
+  <h2>All Courses</h2>
+  <table class="table table-hover">
+    <thead class="thead-dark">
+      <tr>
+        <th>Name</th>
+        <th>Code</th>
+        <th>Description</th>
+        <th>Teacher</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="courseTable"></tbody>
   </table>
 
   <script>
-    async function addTeacher() {
-      const firstName = document.getElementById("first_name").value;
-      const lastName = document.getElementById("last_name").value;
-      const age = document.getElementById("age").value;
-      const cedula = document.getElementById("cedula").value;
-
-      const response = await fetch("http://localhost:3000/teachers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ first_name: firstName, last_name: lastName, age, cedula })
-      });
-
-      if (response.ok) {
-        alert("Teacher added successfully!");
-        listTeachers();
-      } else {
-        alert("Error adding teacher");
-      }
-    }
-
-    async function listTeachers() {
+    async function fetchTeachers() {
       const response = await fetch("http://localhost:3000/teachers");
       const teachers = await response.json();
-      const tableBody = document.getElementById("teacher_table");
-      tableBody.innerHTML = "";
-
+      const table = document.getElementById("teacherTable");
+      table.innerHTML = "";
       teachers.forEach(teacher => {
-        const row = `<tr>
-          <td>${teacher.first_name}</td>
-          <td>${teacher.last_name}</td>
-          <td>${teacher.age}</td>
-          <td>${teacher.cedula}</td>
-          <td>
-            <button onclick="editTeacher('${teacher._id}')">Edit</button>
-            <button onclick="deleteTeacher('${teacher._id}')">Delete</button>
-          </td>
-        </tr>`;
-        tableBody.innerHTML += row;
+        table.innerHTML += `
+            <tr>
+                <td>${teacher.first_name}</td>
+                <td>${teacher.last_name}</td>
+                <td>${teacher.age}</td>
+                <td>${teacher.cedula}</td>
+                <td>
+                    <button onclick="editTeacher('${teacher._id}')" class="btn btn-warning">Edit</button>
+                    <button onclick="deleteTeacher('${teacher._id}')" class="btn btn-danger">Delete</button>
+                </td>
+            </tr>`;
       });
+    }
+
+
+    async function fetchCourses() {
+      const response = await fetch("http://localhost:3000/courses");
+      const courses = await response.json();
+      const table = document.getElementById("courseTable");
+      table.innerHTML = "";
+      courses.forEach(course => {
+        const teacherName = course.teacher ? `${course.teacher.first_name} ${course.teacher.last_name}` : "No Teacher";
+        table.innerHTML += `
+            <tr>
+                <td>${course.name}</td>
+                <td>${course.code}</td>
+                <td>${course.description}</td>
+                <td>${teacherName}</td>
+                <td>
+                    <button onclick="editCourse('${course._id}')" class="btn btn-warning">Edit</button>
+                    <button onclick="deleteCourse('${course._id}')" class="btn btn-danger">Delete</button>
+                </td>
+            </tr>`;
+      });
+    }
+
+    document.getElementById("teacherForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const first_name = document.getElementById("first_name").value;
+      const last_name = document.getElementById("last_name").value;
+      const age = document.getElementById("age").value;
+      const cedula = document.getElementById("cedula").value;
+      await fetch("http://localhost:3000/teachers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ first_name, last_name, age, cedula })
+      });
+      fetchTeachers();
+    });
+
+    document.getElementById("courseForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const name = document.getElementById("name").value;
+      const code = document.getElementById("code").value;
+      const description = document.getElementById("description").value;
+      const teacher = document.getElementById("teacher").value; // Debe ser un ObjectId
+
+      if (!teacher || teacher.length !== 24) {
+        alert("Please select a valid teacher");
+        return;
+      }
+
+      await fetch("http://localhost:3000/courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, code, description, teacher })
+      });
+
+      fetchCourses();
+    });
+
+    async function deleteTeacher(id) {
+      await fetch(`http://localhost:3000/teachers?id=${id}`, { method: "DELETE" });
+      fetchTeachers();
+    }
+
+    async function deleteCourse(id) {
+      await fetch(`http://localhost:3000/courses?id=${id}`, { method: "DELETE" });
+      fetchCourses();
     }
 
     async function editTeacher(id) {
@@ -102,7 +153,7 @@
       const newCedula = prompt("Enter new Cedula:");
 
       if (newFirstName && newLastName && newAge && newCedula) {
-        const response = await fetch(`http://localhost:3000/teachers?id=${id}`, {
+        await fetch(`http://localhost:3000/teachers?id=${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -113,31 +164,34 @@
           })
         });
 
-        if (response.ok) {
-          alert("Teacher updated successfully!");
-          listTeachers();
-        } else {
-          alert("Error updating teacher");
-        }
+        fetchTeachers();
       }
     }
 
-    async function deleteTeacher(id) {
-      if (confirm("Are you sure you want to delete this teacher?")) {
-        const response = await fetch(`http://localhost:3000/teachers?id=${id}`, {
-          method: "DELETE"
+    async function editCourse(id) {
+      const newName = prompt("Enter new Course Name:");
+      const newCode = prompt("Enter new Course Code:");
+      const newDescription = prompt("Enter new Description:");
+
+      if (newName && newCode && newDescription) {
+        await fetch(`http://localhost:3000/courses?id=${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: newName,
+            code: newCode,
+            description: newDescription
+          })
         });
 
-        if (response.ok) {
-          alert("Teacher deleted successfully!");
-          listTeachers();
-        } else {
-          alert("Error deleting teacher");
-        }
+        fetchCourses();
       }
     }
 
-    document.addEventListener("DOMContentLoaded", listTeachers);
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchTeachers();
+      fetchCourses();
+    });
   </script>
 </body>
 
