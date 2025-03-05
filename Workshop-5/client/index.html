@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher & Course Management</title>
+  <!-- Bootstrap 5 CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+</head>
+
+<body class="bg-dark">
+  <h1 class="text-center text-white">Teacher & Course Management</h1><br>
+
+  <div class="container p-3 mb-2 bg-success-subtle">
+    <h2 class="text-center">Add Teacher</h2>
+    <form id="teacherForm" class="p-4 border rounded bg-light">
+      <div class="mb-3">
+        <label class="form-label">First Name</label>
+        <input type="text" id="first_name" class="form-control" placeholder="First Name" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Last Name</label>
+        <input type="text" id="last_name" class="form-control" placeholder="Last Name" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Age</label>
+        <input type="number" id="age" class="form-control" placeholder="Age" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Cedula</label>
+        <input type="text" id="cedula" class="form-control" placeholder="Cedula" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Add Teacher</button>
+    </form>
+
+    <h2 class="text-center">All Teachers</h2>
+    <table class="table table-striped table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Age</th>
+          <th>Cedula</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="teacherTable"></tbody>
+    </table>
+  </div><br>
+
+  <div class="container p-3 mb-2 bg-primary-subtle">
+    <h2 class="text-center">Add Course</h2>
+    <form id="courseForm" class="p-4 border rounded bg-light">
+      <div class="mb-3">
+        <label class="form-label">Course Name</label>
+        <input type="text" id="name" class="form-control" placeholder="Course Name" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Course Code</label>
+        <input type="text" id="code" class="form-control" placeholder="Course Code" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <input type="text" id="description" class="form-control" placeholder="Description" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Teacher</label>
+        <select id="teacher" class="form-control"></select>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Add Course</button>
+    </form>
+
+    <div class="container mt-5">
+      <h2 class="text-center">All Courses</h2>
+      <table class="table table-striped table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th>Name</th>
+            <th>Code</th>
+            <th>Description</th>
+            <th>Teacher</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="courseTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Función para obtener los profesores con autenticación
+    async function fetchTeachers() {
+      const response = await fetch("http://localhost:3000/teachers", {
+        headers: {
+          "Authorization": getAuthToken()
+        }
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        alert("Unauthorized! Please log in.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const teachers = await response.json();
+      const table = document.getElementById("teacherTable");
+      table.innerHTML = "";
+      teachers.forEach(teacher => {
+        table.innerHTML += `
+            <tr>
+                <td>${teacher.first_name}</td>
+                <td>${teacher.last_name}</td>
+                <td>${teacher.age}</td>
+                <td>${teacher.cedula}</td>
+                <td>
+                    <button onclick="editTeacher('${teacher._id}')" class="btn btn-warning">Edit</button>
+                    <button onclick="deleteTeacher('${teacher._id}')" class="btn btn-danger">Delete</button>
+                </td>
+            </tr>`;
+      });
+    }
+
+
+    // Función para obtener los cursos con autenticación
+    async function fetchCourses() {
+      const response = await fetch("http://localhost:3000/courses", {
+        headers: {
+          "Authorization": getAuthToken()
+        }
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        alert("Unauthorized! Please log in.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const courses = await response.json();
+      const table = document.getElementById("courseTable");
+      table.innerHTML = "";
+      courses.forEach(course => {
+        const teacherName = course.teacher ? `${course.teacher.first_name} ${course.teacher.last_name}` : "No Teacher";
+        table.innerHTML += `
+            <tr>
+                <td>${course.name}</td>
+                <td>${course.code}</td>
+                <td>${course.description}</td>
+                <td>${teacherName}</td>
+                <td>
+                    <button onclick="editCourse('${course._id}')" class="btn btn-warning">Edit</button>
+                    <button onclick="deleteCourse('${course._id}')" class="btn btn-danger">Delete</button>
+                </td>
+            </tr>`;
+      });
+    }
+
+    document.getElementById("teacherForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const first_name = document.getElementById("first_name").value;
+      const last_name = document.getElementById("last_name").value;
+      const age = document.getElementById("age").value;
+      const cedula = document.getElementById("cedula").value;
+      await fetch("http://localhost:3000/teachers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ first_name, last_name, age, cedula })
+      });
+      fetchTeachers();
+    });
+
+    document.getElementById("courseForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const name = document.getElementById("name").value;
+      const code = document.getElementById("code").value;
+      const description = document.getElementById("description").value;
+      const teacher = document.getElementById("teacher").value; // Debe ser un ObjectId
+
+      if (!teacher || teacher.length !== 24) {
+        alert("Please select a valid teacher");
+        return;
+      }
+
+      await fetch("http://localhost:3000/courses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, code, description, teacher })
+      });
+
+      fetchCourses();
+    });
+
+    // Modificar las solicitudes POST, PUT y DELETE para incluir el header Authorization
+    async function deleteTeacher(id) {
+      await fetch(`http://localhost:3000/teachers?id=${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": getAuthToken()
+        }
+      });
+      fetchTeachers();
+    }
+
+    async function deleteCourse(id) {
+      await fetch(`http://localhost:3000/courses?id=${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": getAuthToken()
+        }
+      });
+      fetchCourses();
+    }
+
+    async function editTeacher(id) {
+      const newFirstName = prompt("Enter new First Name:");
+      const newLastName = prompt("Enter new Last Name:");
+      const newAge = prompt("Enter new Age:");
+      const newCedula = prompt("Enter new Cedula:");
+
+      if (newFirstName && newLastName && newAge && newCedula) {
+        await fetch(`http://localhost:3000/teachers?id=${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            first_name: newFirstName,
+            last_name: newLastName,
+            age: newAge,
+            cedula: newCedula
+          })
+        });
+
+        fetchTeachers();
+      }
+    }
+
+    async function editCourse(id) {
+      const newName = prompt("Enter new Course Name:");
+      const newCode = prompt("Enter new Course Code:");
+      const newDescription = prompt("Enter new Description:");
+
+      if (newName && newCode && newDescription) {
+        await fetch(`http://localhost:3000/courses?id=${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: newName,
+            code: newCode,
+            description: newDescription
+          })
+        });
+
+        fetchCourses();
+      }
+    }
+
+    // Al cargar la página, verificar autenticación y cargar datos
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!getAuthToken()) {
+        alert("Please log in.");
+        window.location.href = "login.html";
+      } else {
+        fetchTeachers();
+        fetchCourses();
+      }
+    });
+
+
+    // Función para obtener el token de sessionStorage
+    function getAuthToken() {
+      return sessionStorage.getItem("authToken");
+    }
+
+  </script>
+</body>
+
+</html>
